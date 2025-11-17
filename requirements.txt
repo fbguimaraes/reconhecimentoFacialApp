@@ -1,0 +1,27 @@
+# Sistema de Reconhecimento Facial - Dependências Básicas
+# Instalar com: pip install -r requirements.txt
+
+# API REST e WebSocket
+fastapi
+uvicorn[standard]
+websockets
+python-multipart
+
+# Visão Computacional (SEM MediaPipe - usa Haar Cascade)
+opencv-python
+opencv-contrib-python
+
+# Machine Learning
+scikit-learn
+numpy<2.0.0
+
+# Imagens
+pillow
+
+# Utilitários
+pydantic
+python-dotenv
+aiofiles
+
+# Dashboard Web
+flask

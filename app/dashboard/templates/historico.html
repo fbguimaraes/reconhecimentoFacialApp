@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histórico - Reconhecimento Facial</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2rem;
+        }
+        
+        .nav {
+            margin-top: 15px;
+        }
+        
+        .nav a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            margin: 0 5px;
+            border-radius: 8px;
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .nav a:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        main {
+            padding: 30px;
+        }
+        
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .controls input, .controls select, .controls button {
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        .controls button {
+            background: #667eea;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .controls button:hover {
+            background: #5568d3;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+        }
+        
+        tbody tr {
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        tbody tr:hover {
+            background: #f9fafb;
+        }
+        
+        .badge {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            display: inline-block;
+        }
+        
+        .badge-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .badge-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        footer {
+            background: #1f2937;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Histórico de Acessos</h1>
+            <div class="nav">
+                <a href="/">← Voltar</a>
+                <a href="#" onclick="exportarCSV()">📥 Exportar CSV</a>
+            </div>
+        </header>
+
+        <main>
+            <div class="controls">
+                <input type="text" id="filtro-nome" placeholder="Filtrar por nome...">
+                <select id="filtro-acesso">
+                    <option value="">Todos</option>
+                    <option value="LIBERADO">Liberados</option>
+                    <option value="NEGADO">Negados</option>
+                </select>
+                <button onclick="aplicarFiltros()">Filtrar</button>
+                <button onclick="limparFiltros()">Limpar</button>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Data/Hora</th>
+                        <th>Nome</th>
+                        <th>Confiança</th>
+                        <th>Status</th>
+                        <th>Motivos</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody">
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 40px;">
+                            Carregando...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </main>
+
+        <footer>
+            <p>Sistema de Reconhecimento Facial v1.0</p>
+        </footer>
+    </div>
+
+    <script>
+        let todosRegistros = [];
+
+        async function carregarHistorico() {
+            try {
+                const res = await fetch('http://localhost:8000/api/historico?limit=1000');
+                todosRegistros = await res.json();
+                renderizar(todosRegistros);
+            } catch (e) {
+                document.getElementById('tbody').innerHTML = 
+                    '<tr><td colspan="6" style="text-align:center;color:red;">Erro ao carregar</td></tr>';
+            }
+        }
+
+        function renderizar(registros) {
+            const tbody = document.getElementById('tbody');
+            
+            if (registros.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nenhum registro</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = registros.map((r, i) => {
+                const badgeClass = r.acesso === 'LIBERADO' ? 'badge-success' : 'badge-danger';
+                const motivos = r.motivos.length > 0 ? r.motivos.join(', ') : '-';
+                
+                return `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td>${r.timestamp}</td>
+                        <td><strong>${r.nome}</strong></td>
+                        <td>${(r.confianca * 100).toFixed(1)}%</td>
+                        <td><span class="badge ${badgeClass}">${r.acesso}</span></td>
+                        <td style="font-size:0.9rem;color:#6b7280;">${motivos}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function aplicarFiltros() {
+            const nome = document.getElementById('filtro-nome').value.toLowerCase();
+            const acesso = document.getElementById('filtro-acesso').value;
+
+            const filtrados = todosRegistros.filter(r => {
+                const matchNome = !nome || r.nome.toLowerCase().includes(nome);
+                const matchAcesso = !acesso || r.acesso === acesso;
+                return matchNome && matchAcesso;
+            });
+
+            renderizar(filtrados);
+        }
+
+        function limparFiltros() {
+            document.getElementById('filtro-nome').value = '';
+            document.getElementById('filtro-acesso').value = '';
+            renderizar(todosRegistros);
+        }
+
+        async function exportarCSV() {
+            window.location.href = 'http://localhost:8000/api/exportar';
+        }
+
+        // Carregar ao iniciar
+        carregarHistorico();
+
+        // Atualizar a cada 10s
+        setInterval(carregarHistorico, 10000);
+    </script>
+</body>
+</html>
