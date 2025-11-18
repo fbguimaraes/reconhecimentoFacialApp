@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Reconhecimento Facial</title>
+    <title>Dashboard PRO - Reconhecimento Facial</title>
     <style>
         * {
             margin: 0;
@@ -12,14 +12,14 @@
         }
         
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             background: white;
             border-radius: 20px;
@@ -36,6 +36,12 @@
         
         h1 {
             font-size: 2rem;
+            margin-bottom: 5px;
+        }
+        
+        .version {
+            font-size: 0.9rem;
+            opacity: 0.9;
             margin-bottom: 10px;
         }
         
@@ -56,12 +62,38 @@
         }
         
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.1); }
         }
         
         main {
             padding: 30px;
+        }
+        
+        .metrics-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .metric-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
         }
         
         .card {
@@ -89,11 +121,23 @@
         .led.green {
             background: #10b981;
             box-shadow: 0 0 60px #10b981;
+            animation: pulse-green 2s infinite;
         }
         
         .led.red {
             background: #ef4444;
             box-shadow: 0 0 60px #ef4444;
+            animation: pulse-red 2s infinite;
+        }
+        
+        @keyframes pulse-green {
+            0%, 100% { box-shadow: 0 0 40px #10b981; }
+            50% { box-shadow: 0 0 80px #10b981; }
+        }
+        
+        @keyframes pulse-red {
+            0%, 100% { box-shadow: 0 0 40px #ef4444; }
+            50% { box-shadow: 0 0 80px #ef4444; }
         }
         
         .led-text {
@@ -126,6 +170,32 @@
             font-size: 1.5rem;
             font-weight: bold;
             color: #1f2937;
+        }
+        
+        .ensemble-votes {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .vote-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: #f3f4f6;
+            border-radius: 5px;
+        }
+        
+        .vote-name {
+            font-weight: 600;
+        }
+        
+        .vote-conf {
+            font-weight: bold;
+            color: #667eea;
         }
         
         .image-box {
@@ -161,6 +231,11 @@
             border-radius: 5px;
         }
         
+        .motivo-item.good {
+            background: #d1fae5;
+            border-left-color: #10b981;
+        }
+        
         footer {
             background: #1f2937;
             color: white;
@@ -176,7 +251,8 @@
 <body>
     <div class="container">
         <header>
-            <h1>🔐 Sistema de Controle de Acesso</h1>
+            <h1>🔐 Sistema de Reconhecimento Facial</h1>
+            <div class="version">v2.0 - Ensemble Learning + DNN + Face Recognition</div>
             <div class="status">
                 <span class="status-dot"></span>
                 <span id="connection-status">Conectando...</span>
@@ -184,6 +260,26 @@
         </header>
 
         <main>
+            <!-- Métricas em Tempo Real -->
+            <div class="metrics-bar">
+                <div class="metric-card">
+                    <div class="metric-label">Reconhecimentos</div>
+                    <div class="metric-value" id="metric-total">0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Tempo Médio</div>
+                    <div class="metric-value" id="metric-tempo">0ms</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Qualidade</div>
+                    <div class="metric-value" id="metric-qualidade">0/100</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Último Tempo</div>
+                    <div class="metric-value" id="metric-ultimo">0ms</div>
+                </div>
+            </div>
+
             <div class="card">
                 <div class="led-container">
                     <div id="led" class="led"></div>
@@ -196,7 +292,7 @@
                         <div id="pessoa" class="info-value">-</div>
                     </div>
                     <div class="info-card">
-                        <div class="info-label">Confiança</div>
+                        <div class="info-label">Confiança Ensemble</div>
                         <div id="confianca" class="info-value">0%</div>
                     </div>
                     <div class="info-card">
@@ -209,13 +305,19 @@
                     </div>
                 </div>
 
+                <!-- Ensemble Votes -->
+                <div class="ensemble-votes" id="ensemble-container" style="display:none;">
+                    <h3>🎯 Ensemble Votes</h3>
+                    <div id="ensemble-votes"></div>
+                </div>
+
                 <div class="image-box">
                     <h3>Última Captura</h3>
                     <img id="imagem" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23eee' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' fill='%23999' font-size='20'%3EAguardando...%3C/text%3E%3C/svg%3E" alt="Aguardando">
                 </div>
 
                 <div class="motivos">
-                    <h3>Análise</h3>
+                    <h3>Análise Detalhada</h3>
                     <div id="motivos">
                         <div class="motivo-item">Aguardando reconhecimento...</div>
                     </div>
@@ -224,7 +326,7 @@
         </main>
 
         <footer>
-            <p>Sistema de Reconhecimento Facial v1.0</p>
+            <p>Sistema PROFISSIONAL v2.0 | Ensemble (SVM + KNN + Distance) | Face Recognition (dlib)</p>
         </footer>
     </div>
 
@@ -233,18 +335,23 @@
         let ws = null;
 
         function conectarWebSocket() {
-            console.log('Conectando WebSocket...');
+            console.log('Conectando...');
             ws = new WebSocket(WS_URL);
 
             ws.onopen = () => {
                 console.log('✓ Conectado');
-                document.getElementById('connection-status').textContent = 'Conectado';
+                document.getElementById('connection-status').textContent = 'Conectado (WebSocket)';
             };
 
             ws.onmessage = (event) => {
                 const msg = JSON.parse(event.data);
+                
                 if (msg.type === 'recognition' || msg.type === 'initial') {
                     atualizarStatus(msg.data);
+                    
+                    if (msg.metrics) {
+                        atualizarMetricas(msg.metrics);
+                    }
                 }
             };
 
@@ -255,11 +362,48 @@
             };
         }
 
+        function atualizarMetricas(metrics) {
+            if (metrics.tempo_ms) {
+                document.getElementById('metric-ultimo').textContent = Math.round(metrics.tempo_ms) + 'ms';
+            }
+            
+            if (metrics.quality_score) {
+                document.getElementById('metric-qualidade').textContent = metrics.quality_score + '/100';
+            }
+            
+            if (metrics.ensemble) {
+                mostrarEnsemble(metrics.ensemble);
+            }
+        }
+
+        function mostrarEnsemble(votes) {
+            const container = document.getElementById('ensemble-container');
+            const votesDiv = document.getElementById('ensemble-votes');
+            
+            if (!votes || Object.keys(votes).length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'block';
+            
+            let html = '';
+            for (const [method, data] of Object.entries(votes)) {
+                html += `
+                    <div class="vote-item">
+                        <span class="vote-name">${method.toUpperCase()}: ${data.nome}</span>
+                        <span class="vote-conf">${(data.conf * 100).toFixed(1)}%</span>
+                    </div>
+                `;
+            }
+            
+            votesDiv.innerHTML = html;
+        }
+
         function atualizarStatus(data) {
             const led = document.getElementById('led');
             const ledText = document.getElementById('led-text');
             
-            // LED
             led.className = 'led';
             if (data.acesso === 'SIM') {
                 led.classList.add('green');
@@ -274,7 +418,6 @@
                 ledText.style.color = '#6b7280';
             }
 
-            // Informações
             document.getElementById('pessoa').textContent = data.nome || '-';
             document.getElementById('confianca').textContent = (data.confianca * 100).toFixed(1) + '%';
             document.getElementById('timestamp').textContent = data.timestamp || '-';
@@ -286,24 +429,36 @@
                                 (data.acesso === 'SIM' ? 'success' : 
                                  data.acesso === 'NAO' ? 'danger' : 'warning');
 
-            // Imagem
             if (data.imagem) {
                 document.getElementById('imagem').src = 'data:image/jpeg;base64,' + data.imagem;
             }
 
-            // Motivos
             const motivosDiv = document.getElementById('motivos');
             if (data.motivos && data.motivos.length > 0) {
                 motivosDiv.innerHTML = data.motivos.map(m => 
                     `<div class="motivo-item">${m}</div>`
                 ).join('');
             } else {
-                motivosDiv.innerHTML = '<div class="motivo-item">Nenhum problema detectado</div>';
+                motivosDiv.innerHTML = '<div class="motivo-item good">✓ Reconhecimento bem-sucedido!</div>';
             }
         }
 
-        // Conectar ao iniciar
+        // Carregar métricas globais
+        async function carregarMetricasGlobais() {
+            try {
+                const res = await fetch('http://localhost:8000/api/metrics');
+                const metrics = await res.json();
+                
+                document.getElementById('metric-total').textContent = metrics.total_reconhecimentos;
+                document.getElementById('metric-tempo').textContent = Math.round(metrics.tempo_medio_ms) + 'ms';
+            } catch (e) {
+                console.error('Erro ao carregar métricas:', e);
+            }
+        }
+
         conectarWebSocket();
+        carregarMetricasGlobais();
+        setInterval(carregarMetricasGlobais, 10000);
     </script>
 </body>
 </html>

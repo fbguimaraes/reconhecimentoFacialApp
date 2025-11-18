@@ -1,27 +1,31 @@
-# Sistema de Reconhecimento Facial - Dependências Básicas
-# Instalar com: pip install -r requirements.txt
+# Sistema de Reconhecimento Facial PROFISSIONAL v2.0
 
-# API REST e WebSocket
-fastapi
-uvicorn[standard]
-websockets
-python-multipart
+# API e WebSocket
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+websockets>=12.0
+python-multipart>=0.0.6
 
-# Visão Computacional (SEM MediaPipe - usa Haar Cascade)
-opencv-python
-opencv-contrib-python
+# Reconhecimento Facial Profissional
+face-recognition>=1.3.0
+dlib>=19.24.0
+cmake>=3.25.0
+mtcnn>=0.1.1
+
+# OpenCV
+opencv-python>=4.8.0
+opencv-contrib-python>=4.8.0
 
 # Machine Learning
-scikit-learn
-numpy<2.0.0
+scikit-learn>=1.4.0
+numpy>=1.24.0,<2.0.0
+scipy>=1.10.0
 
-# Imagens
-pillow
+# Utilitarios
+pillow>=10.0.0
+pydantic>=2.5.0
+python-dotenv>=1.0.0
+aiofiles>=23.2.0
 
-# Utilitários
-pydantic
-python-dotenv
-aiofiles
-
-# Dashboard Web
-flask
+# Dashboard
+flask>=3.0.0
